@@ -1,1 +1,999 @@
 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>Kas Kosan</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0b0e13; --card:#14181f; --card2:#1a1f29; --line:#2a3140;
+    --txt:#e8ecf4; --muted:#8b94a7; --acc:#6c8cff;
+    --green:#3ddc97; --amber:#ffc94d; --red:#ff6b6b;
+  }
+  html,body{height:100%;background:var(--bg);color:var(--txt);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.4}
+  .app{max-width:480px;margin:0 auto;padding:12px 12px 90px}
+
+  .top{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 10px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:38px;height:38px;border-radius:11px;background:var(--card2);border:1px solid var(--line);
+    display:grid;place-items:center;font-size:18px}
+  .brand h1{font-size:16px;font-weight:700}
+  .brand p{font-size:11px;color:var(--muted)}
+  .status{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--amber)}
+  .dot.ok{background:var(--green)} .dot.err{background:var(--red)}
+
+  .saldoCard{
+    background:linear-gradient(145deg,#1a2235,#14181f);
+    border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;
+  }
+  .saldoCard .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;text-align:center}
+  .saldoGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .saldoBox{
+    background:var(--card2);border:1px solid var(--line);border-radius:12px;
+    padding:10px 6px;text-align:center;
+  }
+  .saldoBox .ico{font-size:16px;margin-bottom:2px}
+  .saldoBox .val{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+  .saldoBox .val.pos{color:var(--green)}
+  .saldoBox .val.neg{color:var(--red)}
+  .saldoBox .lbl{font-size:10px;color:var(--muted);margin-top:2px}
+  .saldoTotal{text-align:center;margin-top:10px;font-size:12px;color:var(--muted)}
+  .saldoTotal strong{color:var(--txt);font-size:15px}
+
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+  .actionBtn{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;
+    cursor:pointer;font-family:inherit;color:var(--txt);
+  }
+  .actionBtn:active{transform:scale(.97)}
+  .actionBtn .ico{font-size:22px}
+  .actionBtn .txt{font-size:13px;font-weight:600}
+  .actionBtn.primary{background:linear-gradient(180deg,#6c8cff22,#6c8cff11);border-color:#6c8cff55}
+  .actionBtn.danger{background:linear-gradient(180deg,#ff6b6b18,#ff6b6b08);border-color:#ff6b6b44}
+
+  .copyBtn{
+    width:100%;background:var(--card2);border:1px solid var(--line);border-radius:12px;
+    padding:11px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer;
+    font-family:inherit;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:6px;
+  }
+  .copyBtn:active{background:var(--acc);color:#fff;border-color:var(--acc)}
+
+  .section{margin-bottom:14px}
+  .secHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px}
+  .secHead h2{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+  .secHead button{background:none;border:none;color:var(--acc);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+
+  .peopleRow{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .pChip{
+    flex:0 0 auto;background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:10px 12px;min-width:120px;text-align:center;cursor:pointer;
+  }
+  .pChip:active{transform:scale(.97);border-color:var(--acc)}
+  .pChip .name{font-size:13px;font-weight:600;margin-bottom:6px;white-space:nowrap}
+  .pChip .cats{display:flex;flex-direction:column;gap:2px;align-items:flex-start}
+  .pChip .catRow{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;display:flex;gap:4px}
+  .pChip .catRow strong{color:var(--green);font-weight:600}
+  .pChip .tot{font-size:12px;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums;margin-top:5px}
+
+  .empty{text-align:center;color:var(--muted);font-size:13px;padding:16px 0}
+
+  .bottomBar{
+    position:fixed;bottom:0;left:0;right:0;background:var(--card);
+    border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+    display:flex;justify-content:center;z-index:40;
+  }
+  .bottomBar .inner{max-width:480px;width:100%;display:flex;gap:8px}
+  .bottomBar button{
+    flex:1;padding:12px;border-radius:12px;border:none;font-size:13px;font-weight:600;
+    font-family:inherit;cursor:pointer;
+  }
+  .btnIn{background:linear-gradient(180deg,#6c8cff,#5474ea);color:#fff}
+  .btnOut{background:var(--card2);border:1px solid var(--line)!important;color:var(--txt)}
+
+  .modalBg{
+    position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:80;
+    display:none;align-items:flex-end;justify-content:center;
+  }
+  .modalBg.show{display:flex}
+  .modal{
+    background:var(--card);border:1px solid var(--line);border-radius:18px 18px 0 0;
+    width:100%;max-width:480px;padding:18px 16px calc(18px + env(safe-area-inset-bottom));
+    max-height:88vh;overflow-y:auto;animation:slideUp .22s ease;
+  }
+  @keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+  .modal h3{font-size:16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+  .closeBtn{
+    background:var(--card2);border:1px solid var(--line);width:30px;height:30px;
+    border-radius:50%;font-size:16px;color:var(--muted);cursor:pointer;display:grid;place-items:center;
+  }
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px}
+  .field input{
+    width:100%;background:var(--card2);border:1px solid var(--line);color:var(--txt);
+    padding:11px 12px;border-radius:10px;font-size:14px;font-family:inherit;outline:none;
+  }
+  .field input:focus{border-color:var(--acc)}
+  .chipSelect{display:flex;flex-wrap:wrap;gap:6px}
+  .chipSelect button{
+    background:var(--card2);border:1px solid var(--line);color:var(--txt);
+    padding:8px 12px;border-radius:999px;font-size:13px;font-family:inherit;cursor:pointer;
+  }
+  .chipSelect button.active{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+  .modalActions{display:flex;gap:8px;margin-top:6px}
+  .modalActions button{
+    flex:1;padding:12px;border-radius:11px;border:none;font-size:14px;font-weight:600;
+    font-family:inherit;cursor:pointer;
+  }
+  .btnPrimary{background:linear-gradient(180deg,#6c8cff,#5474ea);color:#fff}
+  .btnGhost{background:var(--card2);border:1px solid var(--line)!important;color:var(--txt)}
+
+  .manageList{display:flex;flex-direction:column;gap:6px;max-height:40vh;overflow-y:auto;margin-bottom:12px}
+  .manageItem{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+  }
+  .manageItem .name{font-weight:600;font-size:14px}
+  .manageItem .tot{font-size:12px;color:var(--green)}
+  .manageItem .del{
+    width:28px;height:28px;border-radius:8px;border:1px solid var(--line);
+    background:var(--card);color:var(--muted);font-size:13px;cursor:pointer;
+  }
+
+  .detailTotal{text-align:center;margin-bottom:14px}
+  .detailTotal .big{font-size:24px;font-weight:800;color:var(--green);font-variant-numeric:tabular-nums}
+  .detailTotal .lbl{font-size:12px;color:var(--muted);margin-top:2px}
+  .catBreakdown{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+  .catBox{background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:10px;text-align:center}
+  .catBox .ico{font-size:16px;margin-bottom:2px}
+  .catBox .val{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+  .catBox .lbl{font-size:11px;color:var(--muted);margin-top:1px}
+  .txList{display:flex;flex-direction:column;gap:6px;max-height:42vh;overflow-y:auto}
+  .txItem{
+    background:var(--card2);border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  }
+  .txItem .info{flex:1;min-width:0}
+  .txItem .title{font-size:13px;font-weight:600}
+  .txItem .amt{font-size:13px;font-weight:700;color:var(--green);white-space:nowrap}
+  .txItem .delBtn{
+    width:28px;height:28px;border-radius:8px;border:1px solid var(--line);
+    background:var(--card);color:var(--muted);font-size:12px;cursor:pointer;flex-shrink:0;
+  }
+  .txItem .delBtn:active{background:var(--red);color:#fff;border-color:var(--red)}
+
+  .toast{
+    position:fixed;left:50%;bottom:90px;transform:translate(-50%,20px);
+    background:#1e2533;border:1px solid var(--line);color:var(--txt);
+    padding:10px 16px;border-radius:11px;font-size:13px;opacity:0;pointer-events:none;
+    transition:.25s;z-index:99;max-width:90vw;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">🏠</div>
+      <div>
+        <h1>Kas Kosan</h1>
+        <p>Patungan & Pengeluaran</p>
+      </div>
+    </div>
+    <div class="status"><span class="dot" id="dot"></span><span id="statusTxt">…</span></div>
+  </header>
+
+  <div class="saldoCard">
+    <div class="label">Sisa Uang Kas</div>
+    <div class="saldoGrid">
+      <div class="saldoBox" data-catdetail="wifi" style="cursor:pointer">
+        <div class="ico">📶</div>
+        <div class="val pos" id="sisaWifi">Rp 0</div>
+        <div class="lbl">WiFi</div>
+      </div>
+      <div class="saldoBox" data-catdetail="galon" style="cursor:pointer">
+        <div class="ico">💧</div>
+        <div class="val pos" id="sisaGalon">Rp 0</div>
+        <div class="lbl">Galon</div>
+      </div>
+      <div class="saldoBox" data-catdetail="listrik" style="cursor:pointer">
+        <div class="ico">⚡</div>
+        <div class="val pos" id="sisaListrik">Rp 0</div>
+        <div class="lbl">Listrik</div>
+      </div>
+    </div>
+    <div class="saldoTotal">Total sisa: <strong id="saldoAmount">Rp 0</strong></div>
+    <button type="button" id="btnRincianExp" style="width:100%;margin-top:10px;padding:9px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer">📋 Rincian Pengeluaran</button>
+  </div>
+
+  <div class="actions">
+    <button type="button" class="actionBtn primary" id="btnAddPay">
+      <span class="ico">➕</span><span class="txt">Catat Bayaran</span>
+    </button>
+    <button type="button" class="actionBtn danger" id="btnAddExp">
+      <span class="ico">➖</span><span class="txt">Catat Pengeluaran</span>
+    </button>
+  </div>
+
+  <button type="button" class="copyBtn" id="btnCopy">📋 Salin Rekap Semua Anggota</button>
+
+  <div class="section">
+    <div class="secHead">
+      <h2>Anggota</h2>
+      <button type="button" id="btnManage">Kelola Anggota</button>
+    </div>
+    <div class="peopleRow" id="peopleRow">
+      <div class="empty" style="width:100%">Belum ada anggota</div>
+    </div>
+  </div>
+</div>
+
+<div class="bottomBar">
+  <div class="inner">
+    <button type="button" class="btnIn" id="btnAddPay2">➕ Catat Bayaran</button>
+    <button type="button" class="btnOut" id="btnAddExp2">➖ Pengeluaran</button>
+  </div>
+</div>
+
+<!-- Modal Catat Bayaran (tanpa tanggal) -->
+<div class="modalBg" id="modalPay">
+  <div class="modal">
+    <h3>Catat Bayaran <button type="button" class="closeBtn" data-close="modalPay">✕</button></h3>
+    <div class="field">
+      <label>Jumlah</label>
+      <div class="chipSelect" id="payAmountChips">
+        <button type="button" data-amt="5000" class="active">5.000</button>
+        <button type="button" data-amt="10000">10.000</button>
+        <button type="button" data-amt="custom">Custom</button>
+      </div>
+      <input type="text" inputmode="numeric" id="payAmount" placeholder="Isi jumlah custom…" style="display:none;margin-top:8px" />
+    </div>
+    <div class="field">
+      <label>Bayar untuk</label>
+      <div class="chipSelect" id="payCatChips">
+        <button type="button" data-cat="wifi" class="active">📶 WiFi</button>
+        <button type="button" data-cat="galon">💧 Galon</button>
+        <button type="button" data-cat="listrik">⚡ Listrik</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Siapa yang bayar</label>
+      <div class="chipSelect" id="payPersonChips"></div>
+    </div>
+    <div class="modalActions">
+      <button type="button" class="btnGhost" data-close="modalPay">Batal</button>
+      <button type="button" class="btnPrimary" id="btnSavePay">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Pengeluaran -->
+<div class="modalBg" id="modalExp">
+  <div class="modal">
+    <h3>Catat Pengeluaran <button type="button" class="closeBtn" data-close="modalExp">✕</button></h3>
+    <div class="field">
+      <label>Kategori</label>
+      <div class="chipSelect" id="expCatChips">
+        <button type="button" data-cat="wifi" class="active">📶 WiFi</button>
+        <button type="button" data-cat="galon">💧 Galon</button>
+        <button type="button" data-cat="listrik">⚡ Listrik</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Jumlah (Rp)</label>
+      <input type="text" inputmode="numeric" id="expAmount" placeholder="Contoh: 300000" />
+    </div>
+    <div class="field">
+      <label>Tanggal</label>
+      <input type="date" id="expDate" />
+    </div>
+    <div class="field">
+      <label>Keterangan (opsional)</label>
+      <input type="text" id="expDesc" placeholder="Opsional" />
+    </div>
+    <div class="modalActions">
+      <button type="button" class="btnGhost" data-close="modalExp">Batal</button>
+      <button type="button" class="btnPrimary" id="btnSaveExp">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Kelola Anggota -->
+<div class="modalBg" id="modalPeople">
+  <div class="modal">
+    <h3>Kelola Anggota <button type="button" class="closeBtn" data-close="modalPeople">✕</button></h3>
+    <div class="manageList" id="manageList"></div>
+    <div class="field">
+      <label>Tambah anggota baru</label>
+      <input type="text" id="newPerson" placeholder="Nama anggota…" />
+    </div>
+    <div class="modalActions">
+      <button type="button" class="btnGhost" data-close="modalPeople">Tutup</button>
+      <button type="button" class="btnPrimary" id="btnAddPerson">Tambah</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detail Anggota -->
+<div class="modalBg" id="modalDetail">
+  <div class="modal">
+    <h3 id="detailTitle">Detail <button type="button" class="closeBtn" data-close="modalDetail">✕</button></h3>
+    <div class="detailTotal">
+      <div class="big" id="detailTotalAmt">Rp 0</div>
+      <div class="lbl">Total yang sudah dibayar</div>
+    </div>
+    <div class="catBreakdown" id="detailCats"></div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px">Riwayat Pembayaran</div>
+    <div class="txList" id="detailTxList"></div>
+  </div>
+</div>
+
+<!-- Modal Rincian Kategori / Pengeluaran -->
+<div class="modalBg" id="modalCatDetail">
+  <div class="modal">
+    <h3 id="catDetailTitle">Rincian <button type="button" class="closeBtn" data-close="modalCatDetail">✕</button></h3>
+    <div class="catBreakdown" id="catDetailSummary" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:14px"></div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px" id="catDetailListLabel">Daftar</div>
+    <div class="txList" id="catDetailList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, remove, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCF6tfy5IbkSVgeTEhzXVpnvVzYvLTVaYs",
+  authDomain: "life-3c452.firebaseapp.com",
+  databaseURL: "https://life-3c452-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "life-3c452",
+  storageBucket: "life-3c452.firebasestorage.app",
+  messagingSenderId: "217092016915",
+  appId: "1:217092016915:web:b582b4487f30838ca3a8e6",
+  measurementId: "G-29288HF1NH"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+const CAT_LABEL = { wifi:"WiFi", galon:"Galon", listrik:"Listrik" };
+const CAT_ICON  = { wifi:"📶", galon:"💧", listrik:"⚡" };
+const MAIN_CATS = ["wifi","galon","listrik"];
+
+let people = [];
+let txs = [];
+let selectedPerson = null;
+let selectedCat = "wifi";
+let selectedExpCat = "wifi";
+let selectedAmt = 5000; // default 5000, or "custom"
+let currentDetailPerson = null;
+
+const $ = id => document.getElementById(id);
+
+function todayISO(){
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+}
+function fmt(n){ return "Rp " + (Number(n)||0).toLocaleString("id-ID"); }
+function fmtK(n){
+  n = Number(n)||0;
+  if (n >= 1000 && n % 1000 === 0) return (n/1000) + "k";
+  return n.toLocaleString("id-ID");
+}
+function parseNum(str){
+  const d = String(str||"").replace(/\D/g,"");
+  return d ? parseInt(d,10) : 0;
+}
+function esc(s){
+  return String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+
+let toastTimer;
+function toast(msg){
+  const el = $("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+}
+function setStatus(text, state){
+  $("statusTxt").textContent = text;
+  $("dot").className = "dot " + (state||"");
+}
+function openModal(id){ $(id).classList.add("show"); }
+function closeModal(id){ $(id).classList.remove("show"); }
+
+/* ========== EVENT DELEGATION ========== */
+document.addEventListener("click", async (e) => {
+  const t = e.target;
+
+  // Tutup modal
+  const closeBtn = t.closest("[data-close]");
+  if (closeBtn){
+    closeModal(closeBtn.dataset.close);
+    return;
+  }
+  if (t.classList.contains("modalBg")){
+    t.classList.remove("show");
+    return;
+  }
+
+  // Klik anggota → detail
+  const chip = t.closest(".pChip[data-person]");
+  if (chip){
+    openPersonDetail(chip.dataset.person);
+    return;
+  }
+
+  // Hapus transaksi (dari detail)
+  const delBtn = t.closest(".delBtn");
+  if (delBtn && delBtn.dataset.id){
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm("Yakin hapus transaksi ini?")) return;
+    try {
+      await remove(ref(db, "kosan/txs/" + delBtn.dataset.id));
+      toast("Transaksi dihapus");
+    } catch(err){ toast("Gagal hapus: " + err.message); }
+    return;
+  }
+
+  // Hapus anggota
+  const delPerson = t.closest(".manageItem .del");
+  if (delPerson){
+    e.preventDefault();
+    const key = delPerson.dataset.key;
+    const name = delPerson.dataset.name;
+    if (!confirm(`Yakin hapus "${name}"?\nTransaksi atas nama ini tetap tersimpan.`)) return;
+    try {
+      await remove(ref(db, "kosan/people/" + key));
+      toast(`"${name}" dihapus`);
+    } catch(err){ toast("Gagal: " + err.message); }
+    return;
+  }
+
+  // Pilih orang di modal bayar
+  const personChip = t.closest("#payPersonChips button[data-person]");
+  if (personChip){
+    selectedPerson = personChip.dataset.person;
+    document.querySelectorAll("#payPersonChips button").forEach(b => {
+      b.classList.toggle("active", b.dataset.person === selectedPerson);
+    });
+    return;
+  }
+
+  // Pilih kategori (bayaran)
+  const catChip = t.closest("#payCatChips button[data-cat]");
+  if (catChip){
+    selectedCat = catChip.dataset.cat;
+    document.querySelectorAll("#payCatChips button").forEach(b => {
+      b.classList.toggle("active", b.dataset.cat === selectedCat);
+    });
+    return;
+  }
+
+  // Pilih jumlah
+  const amtChip = t.closest("#payAmountChips button[data-amt]");
+  if (amtChip){
+    const v = amtChip.dataset.amt;
+    selectedAmt = v === "custom" ? "custom" : parseInt(v, 10);
+    document.querySelectorAll("#payAmountChips button").forEach(b => {
+      b.classList.toggle("active", b.dataset.amt === amtChip.dataset.amt);
+    });
+    const customInput = $("payAmount");
+    if (selectedAmt === "custom"){
+      customInput.style.display = "block";
+      customInput.value = "";
+      customInput.focus();
+    } else {
+      customInput.style.display = "none";
+      customInput.value = "";
+    }
+    return;
+  }
+
+  // Pilih kategori (pengeluaran)
+  const expCatChip = t.closest("#expCatChips button[data-cat]");
+  if (expCatChip){
+    selectedExpCat = expCatChip.dataset.cat;
+    document.querySelectorAll("#expCatChips button").forEach(b => {
+      b.classList.toggle("active", b.dataset.cat === selectedExpCat);
+    });
+    return;
+  }
+
+  // Klik kotak sisa kategori (atas) → rincian masuk/keluar
+  const catBox = t.closest("[data-catdetail]");
+  if (catBox){
+    openCatDetail(catBox.dataset.catdetail);
+    return;
+  }
+
+  // Klik kategori di detail anggota → langsung catat bayaran
+  const addPayBox = t.closest("[data-addpay]");
+  if (addPayBox){
+    const cat = addPayBox.dataset.addpay;
+    const person = addPayBox.dataset.person;
+    closeModal("modalDetail");
+    openPayModal(person, cat);
+    return;
+  }
+
+  // Hapus transaksi dari rincian kategori/pengeluaran
+  const delCatTx = t.closest("#catDetailList .delBtn");
+  if (delCatTx && delCatTx.dataset.id){
+    e.preventDefault();
+    if (!confirm("Yakin hapus transaksi ini?")) return;
+    try {
+      await remove(ref(db, "kosan/txs/" + delCatTx.dataset.id));
+      toast("Transaksi dihapus");
+    } catch(err){ toast("Gagal: " + err.message); }
+    return;
+  }
+});
+
+// Tombol rincian pengeluaran
+$("btnRincianExp").onclick = () => openExpensesDetail();
+
+/* ========== FIREBASE ========== */
+onValue(ref(db, "kosan/people"), snap => {
+  const v = snap.val() || {};
+  people = Object.entries(v)
+    .map(([key, name]) => ({key, name: String(name)}))
+    .sort((a,b) => a.name.localeCompare(b.name,"id"));
+  renderPeople();
+  renderManageList();
+  renderPayPersonChips();
+  if (currentDetailPerson) renderPersonDetail(currentDetailPerson);
+}, () => setStatus("error","err"));
+
+onValue(ref(db, "kosan/txs"), snap => {
+  const v = snap.val() || {};
+  txs = Object.entries(v).map(([id, t]) => ({id, ...t}));
+  txs.sort((a,b) => (b.created||0) - (a.created||0));
+  renderAll();
+  if (currentDetailPerson) renderPersonDetail(currentDetailPerson);
+}, () => setStatus("error","err"));
+
+onValue(ref(db, ".info/connected"), snap => {
+  setStatus(snap.val() ? "online" : "offline", snap.val() ? "ok" : "err");
+});
+
+/* ========== COMPUTE ========== */
+function compute(){
+  let totalIn = 0, totalOut = 0;
+  const personTot = {};
+  const personCat = {};
+  const personCatList = {};
+  const catIn  = {wifi:0, galon:0, listrik:0, lain:0};
+  const catOut = {wifi:0, galon:0, listrik:0, lain:0};
+
+  for (const p of people) {
+    personTot[p.name] = 0;
+    personCat[p.name] = {wifi:0, galon:0, listrik:0, lain:0};
+    personCatList[p.name] = {wifi:[], galon:[], listrik:[], lain:[]};
+  }
+
+  for (const t of txs){
+    if (t.type === "in"){
+      const amt = Number(t.amount)||0;
+      totalIn += amt;
+      const cat = t.cat || "lain";
+      catIn[cat] = (catIn[cat]||0) + amt;
+      if (t.person) {
+        personTot[t.person] = (personTot[t.person]||0) + amt;
+        if (!personCat[t.person]) {
+          personCat[t.person] = {wifi:0,galon:0,listrik:0,lain:0};
+          personCatList[t.person] = {wifi:[],galon:[],listrik:[],lain:[]};
+        }
+        personCat[t.person][cat] = (personCat[t.person][cat]||0) + amt;
+        personCatList[t.person][cat].push(amt);
+      }
+    } else {
+      const amt = Number(t.amount)||0;
+      totalOut += amt;
+      const cat = t.cat || "lain";
+      catOut[cat] = (catOut[cat]||0) + amt;
+    }
+  }
+
+  const catSisa = {
+    wifi:    (catIn.wifi||0)    - (catOut.wifi||0),
+    galon:   (catIn.galon||0)   - (catOut.galon||0),
+    listrik: (catIn.listrik||0) - (catOut.listrik||0),
+    lain:    (catIn.lain||0)    - (catOut.lain||0)
+  };
+
+  return {
+    totalIn, totalOut, saldo: totalIn - totalOut,
+    personTot, personCat, personCatList,
+    catIn, catOut, catSisa
+  };
+}
+
+/* ========== RENDER ========== */
+function renderAll(){
+  const { personTot, personCat, catSisa } = compute();
+  // total sisa hanya dari 3 kategori utama
+  const totalSisa = (catSisa.wifi||0) + (catSisa.galon||0) + (catSisa.listrik||0);
+  $("saldoAmount").textContent = fmt(totalSisa);
+
+  function setSisa(id, val){
+    const el = $(id);
+    el.textContent = fmt(val);
+    el.className = "val " + (val < 0 ? "neg" : "pos");
+  }
+  setSisa("sisaWifi",    catSisa.wifi);
+  setSisa("sisaGalon",   catSisa.galon);
+  setSisa("sisaListrik", catSisa.listrik);
+
+  if (!people.length){
+    $("peopleRow").innerHTML = `<div class="empty" style="width:100%">Belum ada anggota</div>`;
+  } else {
+    const sorted = [...people].sort((a,b) => (personTot[b.name]||0) - (personTot[a.name]||0));
+    $("peopleRow").innerHTML = sorted.map(p => {
+      const cats = personCat[p.name] || {wifi:0,galon:0,listrik:0};
+      const rows = [];
+      if (cats.wifi)    rows.push(`<div class="catRow">📶 <strong>${fmtK(cats.wifi)}</strong></div>`);
+      if (cats.galon)   rows.push(`<div class="catRow">💧 <strong>${fmtK(cats.galon)}</strong></div>`);
+      if (cats.listrik) rows.push(`<div class="catRow">⚡ <strong>${fmtK(cats.listrik)}</strong></div>`);
+      if (!rows.length) rows.push(`<div class="catRow" style="color:var(--muted)">Belum bayar</div>`);
+
+      return `
+        <div class="pChip" data-person="${esc(p.name)}">
+          <div class="name">${esc(p.name)}</div>
+          <div class="cats">${rows.join("")}</div>
+          <div class="tot">${fmt(personTot[p.name]||0)}</div>
+        </div>
+      `;
+    }).join("");
+  }
+}
+
+function renderPeople(){ renderAll(); }
+
+function renderManageList(){
+  const { personTot } = compute();
+  if (!people.length){
+    $("manageList").innerHTML = `<div class="empty">Belum ada anggota</div>`;
+    return;
+  }
+  $("manageList").innerHTML = people.map(p => `
+    <div class="manageItem">
+      <div>
+        <div class="name">${esc(p.name)}</div>
+        <div class="tot">${fmt(personTot[p.name]||0)}</div>
+      </div>
+      <button type="button" class="del" data-key="${esc(p.key)}" data-name="${esc(p.name)}">✕</button>
+    </div>
+  `).join("");
+}
+
+function renderPayPersonChips(){
+  if (!people.length){
+    $("payPersonChips").innerHTML = `<span style="color:var(--muted);font-size:13px">Tambah anggota dulu</span>`;
+    return;
+  }
+  $("payPersonChips").innerHTML = people.map(p => `
+    <button type="button" data-person="${esc(p.name)}" class="${selectedPerson===p.name?'active':''}">${esc(p.name)}</button>
+  `).join("");
+}
+
+function renderPersonDetail(name){
+  currentDetailPerson = name;
+  const { personTot, personCat } = compute();
+  const total = personTot[name] || 0;
+  const cats = personCat[name] || {wifi:0, galon:0, listrik:0};
+
+  $("detailTitle").innerHTML = `Detail ${esc(name)} <button type="button" class="closeBtn" data-close="modalDetail">✕</button>`;
+  $("detailTotalAmt").textContent = fmt(total);
+
+  $("detailCats").innerHTML = MAIN_CATS.map(c => `
+    <div class="catBox" data-addpay="${c}" data-person="${esc(name)}" style="cursor:pointer">
+      <div class="ico">${CAT_ICON[c]}</div>
+      <div class="val">${fmt(cats[c]||0)}</div>
+      <div class="lbl">${CAT_LABEL[c]}</div>
+    </div>
+  `).join("");
+
+  const myTxs = txs.filter(t => t.type === "in" && t.person === name);
+  if (!myTxs.length){
+    $("detailTxList").innerHTML = `<div class="empty">Belum ada pembayaran</div>`;
+  } else {
+    $("detailTxList").innerHTML = myTxs.map(t => `
+      <div class="txItem">
+        <div class="info">
+          <div class="title">${CAT_ICON[t.cat]||""} ${CAT_LABEL[t.cat]||t.cat}${t.note ? " · " + esc(t.note) : ""}</div>
+        </div>
+        <div class="amt">${fmt(t.amount)}</div>
+        <button type="button" class="delBtn" data-id="${t.id}">✕</button>
+      </div>
+    `).join("");
+  }
+}
+
+function openPersonDetail(name){
+  renderPersonDetail(name);
+  openModal("modalDetail");
+}
+
+function openCatDetail(cat){
+  const { catIn, catOut, catSisa } = compute();
+  const label = CAT_LABEL[cat] || cat;
+  const icon = CAT_ICON[cat] || "";
+  const masuk = catIn[cat]||0;
+  const keluar = catOut[cat]||0;
+  const sisa = catSisa[cat]||0;
+
+  $("catDetailTitle").innerHTML = `${icon} ${label} <button type="button" class="closeBtn" data-close="modalCatDetail">✕</button>`;
+  $("catDetailSummary").innerHTML = `
+    <div class="catBox"><div class="lbl">Masuk</div><div class="val" style="color:var(--green)">${fmt(masuk)}</div></div>
+    <div class="catBox"><div class="lbl">Keluar</div><div class="val" style="color:var(--red)">${fmt(keluar)}</div></div>
+    <div class="catBox"><div class="lbl">Sisa</div><div class="val" style="color:${sisa<0?'var(--red)':'var(--green)'}">${fmt(sisa)}</div></div>
+  `;
+  $("catDetailListLabel").textContent = "Transaksi " + label;
+
+  const related = txs.filter(t => t.cat === cat).sort((a,b) => (b.created||0)-(a.created||0));
+  if (!related.length){
+    $("catDetailList").innerHTML = `<div class="empty">Belum ada transaksi</div>`;
+  } else {
+    $("catDetailList").innerHTML = related.map(t => {
+      if (t.type === "in"){
+        return `<div class="txItem">
+          <div class="info"><div class="title">+ ${esc(t.person||"-")}${t.note?" · "+esc(t.note):""}</div></div>
+          <div class="amt" style="color:var(--green)">${fmt(t.amount)}</div>
+          <button type="button" class="delBtn" data-id="${t.id}">✕</button>
+        </div>`;
+      } else {
+        const tgl = t.date || "";
+        let tglFmt = tgl;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(tgl)){ const [y,m,d]=tgl.split("-"); tglFmt=`${d}-${m}-${y}`; }
+        return `<div class="txItem">
+          <div class="info"><div class="title">− ${esc(t.desc||"Pengeluaran")}</div>
+          <div class="meta" style="font-size:11px;color:var(--muted)">${tglFmt}</div></div>
+          <div class="amt" style="color:var(--red)">${fmt(t.amount)}</div>
+          <button type="button" class="delBtn" data-id="${t.id}">✕</button>
+        </div>`;
+      }
+    }).join("");
+  }
+  openModal("modalCatDetail");
+}
+
+function openExpensesDetail(){
+  $("catDetailTitle").innerHTML = `📋 Rincian Pengeluaran <button type="button" class="closeBtn" data-close="modalCatDetail">✕</button>`;
+  const { totalOut, catOut } = compute();
+  $("catDetailSummary").innerHTML = `
+    <div class="catBox"><div class="ico">📶</div><div class="val" style="color:var(--red)">${fmt(catOut.wifi||0)}</div><div class="lbl">WiFi</div></div>
+    <div class="catBox"><div class="ico">💧</div><div class="val" style="color:var(--red)">${fmt(catOut.galon||0)}</div><div class="lbl">Galon</div></div>
+    <div class="catBox"><div class="ico">⚡</div><div class="val" style="color:var(--red)">${fmt(catOut.listrik||0)}</div><div class="lbl">Listrik</div></div>
+  `;
+  $("catDetailListLabel").textContent = `Semua Pengeluaran (Total ${fmt(totalOut)})`;
+
+  const expenses = txs.filter(t => t.type === "out").sort((a,b) => (b.date||"").localeCompare(a.date||"") || (b.created||0)-(a.created||0));
+  if (!expenses.length){
+    $("catDetailList").innerHTML = `<div class="empty">Belum ada pengeluaran</div>`;
+  } else {
+    $("catDetailList").innerHTML = expenses.map(t => {
+      const tgl = t.date || "";
+      let tglFmt = tgl;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(tgl)){ const [y,m,d]=tgl.split("-"); tglFmt=`${d}-${m}-${y}`; }
+      const icon = CAT_ICON[t.cat] || "";
+      const label = CAT_LABEL[t.cat] || "";
+      return `<div class="txItem">
+        <div class="info">
+          <div class="title">${icon} ${label}${t.desc && t.desc !== "Bayar "+label ? " · "+esc(t.desc) : ""}</div>
+          <div class="meta" style="font-size:11px;color:var(--muted)">${tglFmt}</div>
+        </div>
+        <div class="amt" style="color:var(--red)">${fmt(t.amount)}</div>
+        <button type="button" class="delBtn" data-id="${t.id}">✕</button>
+      </div>`;
+    }).join("");
+  }
+  openModal("modalCatDetail");
+}
+
+/* ========== SALIN REKAP ========== */
+function buildRekapText(){
+  const { personCatList, personTot, personCat, totalIn, totalOut, saldo, catSisa } = compute();
+  const sorted = [...people].sort((a,b) => a.name.localeCompare(b.name,"id"));
+  let lines = [];
+
+  // Total per kategori
+  const catTotals = {wifi:0, galon:0, listrik:0};
+  for (const p of people){
+    const c = personCat[p.name] || {};
+    for (const k of MAIN_CATS) catTotals[k] += (c[k]||0);
+  }
+
+  lines.push(`Total Uang Terkumpul : ${fmtK(totalIn)}`);
+  if (catTotals.wifi)    lines.push(`  📶 WiFi : ${fmtK(catTotals.wifi)}`);
+  if (catTotals.galon)   lines.push(`  💧 Galon : ${fmtK(catTotals.galon)}`);
+  if (catTotals.listrik) lines.push(`  ⚡ Listrik : ${fmtK(catTotals.listrik)}`);
+  lines.push("");
+
+  // Pengeluaran
+  const expenses = txs
+    .filter(t => t.type === "out")
+    .sort((a,b) => (a.date||"").localeCompare(b.date||"") || (a.created||0) - (b.created||0));
+
+  lines.push("Pengeluaran:");
+  if (!expenses.length){
+    lines.push("- Belum ada pengeluaran");
+  } else {
+    expenses.forEach((t, i) => {
+      const tgl = t.date || "-";
+      let tglFmt = tgl;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(tgl)){
+        const [y,m,d] = tgl.split("-");
+        tglFmt = `${d}-${m}-${y}`;
+      }
+      const catLabel = CAT_LABEL[t.cat] || "";
+      const icon = CAT_ICON[t.cat] || "";
+      lines.push(`${i+1}. ${tglFmt} ${icon} ${catLabel}${t.desc && t.desc !== `Bayar ${catLabel}` ? " - "+t.desc : ""} ${fmtK(t.amount)}`);
+    });
+  }
+  lines.push(`Total Pengeluaran : ${fmt(totalOut)}`);
+  lines.push(`Sisa Uang : ${fmt(saldo)}`);
+  lines.push(`  📶 WiFi : ${fmtK(catSisa.wifi)} | 💧 Galon : ${fmtK(catSisa.galon)} | ⚡ Listrik : ${fmtK(catSisa.listrik)}`);
+  lines.push("");
+  lines.push("——————————————");
+  lines.push("Rincian per Anggota:");
+  lines.push("");
+
+  // Rincian per orang
+  let no = 1;
+  for (const p of sorted){
+    const list = personCatList[p.name] || {wifi:[],galon:[],listrik:[]};
+    const tot = personTot[p.name] || 0;
+    if (tot === 0 && !Object.values(list).some(arr => arr.length)) continue;
+
+    lines.push(`${no}. ${p.name}`);
+    for (const cat of MAIN_CATS){
+      const arr = list[cat] || [];
+      if (!arr.length) continue;
+      const sum = arr.reduce((a,b)=>a+b,0);
+      if (arr.length === 1){
+        lines.push(`${CAT_LABEL[cat]} : ${fmtK(arr[0])}`);
+      } else {
+        lines.push(`${CAT_LABEL[cat]} : ${arr.map(fmtK).join(" + ")} = ${fmtK(sum)}`);
+      }
+    }
+    lines.push("");
+    no++;
+  }
+
+  if (no === 1) lines.push("Belum ada data pembayaran anggota.");
+  return lines.join("\n").trim();
+}
+
+$("btnCopy").onclick = async () => {
+  const text = buildRekapText();
+  try {
+    await navigator.clipboard.writeText(text);
+    toast("Rekap berhasil disalin ✓");
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    toast("Rekap berhasil disalin ✓");
+  }
+};
+
+/* ========== BUTTONS ========== */
+function openPayModal(prePerson, preCat){
+  selectedPerson = prePerson || people[0]?.name || null;
+  selectedCat = preCat || "wifi";
+  selectedAmt = 5000;
+  $("payAmount").value = "";
+  $("payAmount").style.display = "none";
+  renderPayPersonChips();
+  document.querySelectorAll("#payCatChips button").forEach(b => {
+    b.classList.toggle("active", b.dataset.cat === selectedCat);
+  });
+  document.querySelectorAll("#payAmountChips button").forEach(b => {
+    b.classList.toggle("active", b.dataset.amt === "5000");
+  });
+  openModal("modalPay");
+}
+$("btnAddPay").onclick = $("btnAddPay2").onclick = () => openPayModal();
+
+$("btnAddExp").onclick = $("btnAddExp2").onclick = () => {
+  selectedExpCat = "wifi";
+  $("expDesc").value = "";
+  $("expAmount").value = "";
+  $("expDate").value = todayISO();
+  document.querySelectorAll("#expCatChips button").forEach(b => {
+    b.classList.toggle("active", b.dataset.cat === "wifi");
+  });
+  openModal("modalExp");
+};
+
+$("btnManage").onclick = () => {
+  $("newPerson").value = "";
+  renderManageList();
+  openModal("modalPeople");
+};
+
+$("btnSavePay").onclick = async () => {
+  let amount = 0;
+  if (selectedAmt === "custom"){
+    amount = parseNum($("payAmount").value);
+  } else {
+    amount = Number(selectedAmt) || 0;
+  }
+  if (!selectedPerson){ toast("Pilih anggota dulu"); return; }
+  if (!amount){ toast("Isi jumlahnya"); return; }
+
+  try {
+    await push(ref(db, "kosan/txs"), {
+      type: "in",
+      person: selectedPerson,
+      cat: selectedCat,
+      amount,
+      created: Date.now()
+    });
+    closeModal("modalPay");
+    toast(`+${fmt(amount)} dari ${selectedPerson}`);
+  } catch(err){
+    toast("Gagal: " + err.message);
+  }
+};
+
+$("btnSaveExp").onclick = async () => {
+  const amount = parseNum($("expAmount").value);
+  if (!amount){ toast("Isi jumlahnya"); return; }
+  const date = $("expDate").value || todayISO();
+  const note = $("expDesc").value.trim();
+  const catLabel = CAT_LABEL[selectedExpCat] || selectedExpCat;
+
+  try {
+    await push(ref(db, "kosan/txs"), {
+      type: "out",
+      cat: selectedExpCat,
+      desc: note || `Bayar ${catLabel}`,
+      amount,
+      date,
+      created: Date.now()
+    });
+    closeModal("modalExp");
+    toast(`Pengeluaran ${catLabel} ${fmt(amount)} dicatat`);
+  } catch(err){
+    toast("Gagal: " + err.message);
+  }
+};
+
+$("btnAddPerson").onclick = async () => {
+  const name = $("newPerson").value.trim();
+  if (!name) return;
+  if (people.some(p => p.name.toLowerCase() === name.toLowerCase())){
+    toast("Nama sudah ada"); return;
+  }
+  try {
+    await push(ref(db, "kosan/people"), name);
+    $("newPerson").value = "";
+    toast(`"${name}" ditambahkan`);
+  } catch(err){ toast("Gagal: " + err.message); }
+};
+
+$("newPerson").addEventListener("keydown", e => {
+  if (e.key === "Enter") $("btnAddPerson").click();
+});
+
+/* INIT */
+$("expDate").value = todayISO();
+setStatus("menghubungkan…", "");
+</script>
+</body>
+</html>
